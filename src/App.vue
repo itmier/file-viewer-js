@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import '../dist/style.css'
 import FileView from '../dist/file-view.js'
 // import FileView from '../lib/main.js'

@@ -1,3 +1,11 @@
+/*
+ * @Author: 王云飞
+ * @Date: 2023-02-01 09:14:38
+ * @LastEditTime: 2023-02-01 16:52:04
+ * @LastEditors: 王云飞
+ * @Description: 
+ * 
+ */
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
@@ -18,9 +26,11 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['vue', 'element-plus'],
-      globals: {
-        vue: 'Vue',
-        'element-plus': 'ElementPlus'
+      output: {
+        globals: {
+          vue: 'Vue',
+          'element-plus': 'ElementPlus'
+        }
       }
     }
   }

@@ -1,5 +1,13 @@
 /*
  * @Author: 王云飞
+ * @Date: 2023-02-01 09:28:38
+ * @LastEditTime: 2023-02-01 17:27:12
+ * @LastEditors: 王云飞
+ * @Description: 
+ * 
+ */
+/*
+ * @Author: 王云飞
  * @Date: 2022-07-22 16:07:20
  * @LastEditTime: 2023-02-01 15:17:01
  * @LastEditors: 王云飞
@@ -10,16 +18,20 @@
 import { ElLoading } from 'element-plus';
 // import { apiGetFile } from '@/api/file.js'
 /* eslint-enable */
-export default class FileView {
+type Params = {
+  files: any[],
+  showUrl: string
+}
+class FileView {
   // 文件页面 文件名等
-  fileViewDescElement = null
+  fileViewDescElement: HTMLElement | null = null
   // 工具面板参数
   toolPanelParams = {
     scale: 1,
     rotate: 0
   }
   // 显示工具栏
-  needTools = true
+  needTools: boolean = true
   // loading实例
   loadingInstance = null
   // 遮罩层
@@ -30,7 +42,8 @@ export default class FileView {
   maskEnableClick = false
   // 点击的 文件在fils的 index
   currentIndex = 0
-  constructor({ files, showUrl } = {}) {
+  files: any[]
+  constructor({ files, showUrl }: Params) {
     this.files = files
     this.currentIndex = this.files.findIndex(item => item.url === showUrl)
     this.initMask()
@@ -49,7 +62,7 @@ export default class FileView {
     this.maskElement.style.height = innerHeight + 'px'
     document.body.appendChild(this.maskElement)
     this.maskElement.addEventListener('click', (event) => {
-      if (!this.maskDisableClick)event.stopPropagation()
+      // if (!this.maskDisableClick)event.stopPropagation()
     })
   }
   // 初始化工具栏
@@ -370,3 +383,4 @@ export default class FileView {
     }
   }
 }
+export default FileView
