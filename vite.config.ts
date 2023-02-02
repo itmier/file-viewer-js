@@ -1,7 +1,7 @@
 /*
  * @Author: 王云飞
  * @Date: 2023-02-01 09:14:38
- * @LastEditTime: 2023-02-01 16:52:04
+ * @LastEditTime: 2023-02-02 09:41:35
  * @LastEditors: 王云飞
  * @Description: 
  * 
@@ -19,7 +19,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'lib/main.js'),
+      entry: resolve(__dirname, 'lib/main.ts'),
       name: 'FileView', // 暴露的全局变量
       fileName: 'file-view', // 输出的包文件名
       formats: ['es', 'umd']

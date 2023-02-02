@@ -1,49 +1,49 @@
 /*
  * @Author: 王云飞
- * @Date: 2023-02-01 09:28:38
- * @LastEditTime: 2023-02-01 17:27:12
+ * @Date: 2023-02-02 08:59:54
+ * @LastEditTime: 2023-02-02 11:07:54
  * @LastEditors: 王云飞
  * @Description: 
  * 
  */
-/*
- * @Author: 王云飞
- * @Date: 2022-07-22 16:07:20
- * @LastEditTime: 2023-02-01 15:17:01
- * @LastEditors: 王云飞
- * @Description: 文件查看
- *
- */
-/* eslint-disable */ 
-import { ElLoading } from 'element-plus';
-// import { apiGetFile } from '@/api/file.js'
-/* eslint-enable */
-type Params = {
-  files: any[],
+import { ElLoading } from "element-plus"
+import type { LoadingOptionsResolved } from 'element-plus'
+interface ToolPanelParams {
+  scale: number
+  rotate: number
+}
+interface CustomFiles {
+  url: string
+  originName: string
+}
+type ConstructorParams = {
+  files: CustomFiles[]
   showUrl: string
 }
 class FileView {
-  // 文件页面 文件名等
-  fileViewDescElement: HTMLElement | null = null
+  // 当前页码/总页码, dom元素
+  public fileViewDescElement: HTMLElement | null = null
   // 工具面板参数
-  toolPanelParams = {
+  public toolPanelParams: ToolPanelParams = {
     scale: 1,
     rotate: 0
   }
   // 显示工具栏
-  needTools: boolean = true
+  public needTools: boolean = true
   // loading实例
-  loadingInstance = null
+  private loadingInstance: any = null
   // 遮罩层
-  maskElement = null
+  public maskElement: HTMLElement | null = null
   // 展示层
-  showElement = null
+  public showElement: HTMLElement | null = null
   // 遮罩层点击是否关闭
-  maskEnableClick = false
+  public maskEnableClick: boolean = false
   // 点击的 文件在fils的 index
-  currentIndex = 0
-  files: any[]
-  constructor({ files, showUrl }: Params) {
+  private currentIndex: number = 0
+  // 文件集合
+  private files: CustomFiles[]
+
+  constructor({files, showUrl}: ConstructorParams ) {
     this.files = files
     this.currentIndex = this.files.findIndex(item => item.url === showUrl)
     this.initMask()
@@ -53,6 +53,7 @@ class FileView {
     this.showFile(this.files[this.currentIndex])
     this.initFileName()
   }
+  // 初始化遮罩层
   initMask() {
     this.maskElement = document.createElement('div')
     this.maskElement.classList.add('file-view-mask')
@@ -62,7 +63,7 @@ class FileView {
     this.maskElement.style.height = innerHeight + 'px'
     document.body.appendChild(this.maskElement)
     this.maskElement.addEventListener('click', (event) => {
-      // if (!this.maskDisableClick)event.stopPropagation()
+      if (!this.maskEnableClick)event.stopPropagation()
     })
   }
   // 初始化工具栏
@@ -108,6 +109,7 @@ class FileView {
       this.maskElement.appendChild(toolsElement)
     }
   }
+  // 添加关闭图标
   addCLoseIcon() {
     const closeIcon = document.createElement('div')
     closeIcon.classList.add('file-view-close')
@@ -145,7 +147,8 @@ class FileView {
       this.arrowIsActive()
     }
   }
-  loadImage(url) {
+  // 图片加载
+  loadImage(url: string) {
     if (this.maskElement && !this.showElement) {
       // 创建展示图层
       this.showElement = document.createElement('div')
@@ -159,10 +162,11 @@ class FileView {
     imgBox.src = url
     imgBox.id = 'img-box'
     imgBox.addEventListener('load', () => {
+      if(!this.showElement) return 
       this.showElement.appendChild(imgBox)
-      this.showElement.addEventListener('mousewheel', (e) => {
-        const delta = e.wheelDelta
-        if (delta > 0) {
+      this.showElement.addEventListener('wheel', (e: WheelEvent) => {
+        const delta = e.deltaY
+        if (delta < 0) {
           this.handleTool('enlarge')
         } else {
           this.handleTool('narrow')
@@ -196,7 +200,8 @@ class FileView {
     errorElement.appendChild(downElement)
     this.showElement.appendChild(errorElement)
   }
-  loadPDF(fileId) {
+  // 加载PDF
+  loadPDF(fileId: string) {
     if (this.maskElement && !this.showElement) {
       // 创建pdf展示图层
       this.showElement = document.createElement('div')
@@ -211,14 +216,15 @@ class FileView {
     pdfBox.addEventListener('click', () => {
       this.previewPDF(fileId)
     })
-    this.showElement.appendChild(pdfBox)
+    this.showElement && this.showElement.appendChild(pdfBox)
   }
   // 清除画布内容
   clearShowContent() {
     // 清除图片/pdf展示
     if (this.showElement) this.showElement.innerHTML = ''
   }
-  getFileType(originName) {
+  // 获取文件类型
+  getFileType(originName: string) {
     let fileType = 'img'
     const arr = originName.split('.')
     const type = arr[arr.length - 1].toLowerCase()
@@ -227,7 +233,8 @@ class FileView {
     }
     return fileType
   }
-  showFile(item) {
+  // 文件展示逻辑
+  showFile(item: CustomFiles) {
     if (!item || !item.url) return
     const type = this.getFileType(item.originName)
     if (type === 'pdf') {
@@ -239,11 +246,15 @@ class FileView {
   open() {
 
   }
+  // 关闭方法
   close() {
-    this.maskElement.parentElement.removeChild(this.maskElement)
-    this.maskElement = null
+    if(this.maskElement) {
+      this.maskElement.parentElement && this.maskElement.parentElement.removeChild(this.maskElement)
+      this.maskElement = null
+    }
   }
-  jumpSwitch(pageIndex) {
+  // 图片跳转方法
+  jumpSwitch(pageIndex: number) {
     // 切换时初始化操作工具
     this.initToolPanelParams()
 
@@ -257,39 +268,44 @@ class FileView {
       this.arrowIsActive()
     }
   }
+  // 加载 Loading
   showLoading() {
-    this.loadingInstance = ElLoading.service({ fullscreen: true, target: this.showElement })
+    this.loadingInstance = ElLoading.service({ fullscreen: true, target: this.showElement! })
   }
+  // 关闭 Loading
   closeLoading() {
     this.loadingInstance.close()
   }
-  async previewPDF(fileId) {
-    const url = await this.getBlobFile(fileId)
-    const iframe = document.createElement('iframe')
-    iframe.src = url
-    iframe.width = '100%'
-    iframe.height = '100%'
-    this.clearShowContent()
-    this.showElement.appendChild(iframe)
-    // 1. 打开子窗口预览
-    // const iLeft = (window.screen.width - 1200) / 2
-    // const iTop = (window.screen.height - 600) / 2
-    // const windowFeatures = `menubar=0,scrollbars=1,resizable=1,status=1,titlebar=0,toolbar=0,location=1,innerWidth=1200,innerHeight=600,top=${iTop},left=${iLeft}`
-    // window.open(generateURL, 'PDF预览', windowFeatures)
+  // PDF 预览
+  async previewPDF(fileId: string) {
+    // const url = await this.getBlobFile(fileId)
+    // const iframe: HTMLIFrameElement = document.createElement('iframe')
+    // iframe.src = url
+    // iframe.width = '100%'
+    // iframe.height = '100%'
+    // this.clearShowContent()
+    // this.showElement.appendChild(iframe)
+    // // 1. 打开子窗口预览
+    // // const iLeft = (window.screen.width - 1200) / 2
+    // // const iTop = (window.screen.height - 600) / 2
+    // // const windowFeatures = `menubar=0,scrollbars=1,resizable=1,status=1,titlebar=0,toolbar=0,location=1,innerWidth=1200,innerHeight=600,top=${iTop},left=${iLeft}`
+    // // window.open(generateURL, 'PDF预览', windowFeatures)
   }
-  async getBlobFile(fileId) {
-    this.showLoading()
-    const pdfResult = await apiGetFile(fileId)
-    this.closeLoading()
-    const finalBlob = new Blob([pdfResult], { type: 'application/pdf' })
-    const generateURL = URL.createObjectURL(finalBlob)
-    // 1. 打开子窗口预览
-    // const iLeft = (window.screen.width - 1200) / 2
-    // const iTop = (window.screen.height - 600) / 2
-    // const windowFeatures = `menubar=0,scrollbars=1,resizable=1,status=1,titlebar=0,toolbar=0,location=1,innerWidth=1200,innerHeight=600,top=${iTop},left=${iLeft}`
-    // window.open(generateURL, 'PDF预览')
-    return generateURL
+  // 获取 FileBlob 生成URL
+  async getBlobFile(fileId: string) {
+    // this.showLoading()
+    // const pdfResult = await apiGetFile(fileId)
+    // this.closeLoading()
+    // const finalBlob = new Blob([pdfResult], { type: 'application/pdf' })
+    // const generateURL = URL.createObjectURL(finalBlob)
+    // // 1. 打开子窗口预览
+    // // const iLeft = (window.screen.width - 1200) / 2
+    // // const iTop = (window.screen.height - 600) / 2
+    // // const windowFeatures = `menubar=0,scrollbars=1,resizable=1,status=1,titlebar=0,toolbar=0,location=1,innerWidth=1200,innerHeight=600,top=${iTop},left=${iLeft}`
+    // // window.open(generateURL, 'PDF预览')
+    // return generateURL
   }
+  // 初始化 工具栏参数
   initToolPanelParams() {
     this.toolPanelParams = {
       scale: 1,
@@ -305,7 +321,7 @@ class FileView {
     }
   }
   // handleTool
-  handleTool(type) {
+  handleTool(type: string) {
     let scale = this.toolPanelParams.scale
     let rotate = this.toolPanelParams.rotate
     switch (type) {
@@ -349,22 +365,22 @@ class FileView {
         break
     }
   }
-  // 箭头是否是激活的
+  // 箭头是否处于激活状态
   arrowIsActive() {
-    const leftArrowEle = document.getElementById('left-arrow')
-    const rightArrowEle = document.getElementById('right-arrow')
+    const leftArrowEle: HTMLElement | null = document.getElementById('left-arrow')
+    const rightArrowEle: HTMLElement | null = document.getElementById('right-arrow')
     // 最后一张图了
     if (this.currentIndex === (this.files.length - 1)) {
-      leftArrowEle.classList.remove('deactive')
-      rightArrowEle.classList.add('deactive')
+      leftArrowEle && leftArrowEle.classList.remove('deactive')
+      rightArrowEle && rightArrowEle.classList.add('deactive')
       return
     } else if (this.currentIndex === 0) { // 是第一张图
-      rightArrowEle.classList.remove('deactive')
-      leftArrowEle.classList.add('deactive')
+      rightArrowEle && rightArrowEle.classList.remove('deactive')
+      leftArrowEle && leftArrowEle.classList.add('deactive')
       return
     }
-    rightArrowEle.classList.remove('deactive')
-    leftArrowEle.classList.remove('deactive')
+    rightArrowEle && rightArrowEle.classList.remove('deactive')
+    leftArrowEle && leftArrowEle.classList.remove('deactive')
   }
   // initFileName
   initFileName() {
@@ -376,6 +392,7 @@ class FileView {
       this.setFilePageName()
     }
   }
+  // 设置页码内容
   setFilePageName() {
     if (this.fileViewDescElement) {
       const pageContent = `${this.currentIndex + 1}/${this.files.length}`
@@ -383,4 +400,5 @@ class FileView {
     }
   }
 }
+
 export default FileView
