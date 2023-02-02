@@ -1,7 +1,7 @@
 {
   "name": "file-viewer-js",
   "private": false,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "web端文件查看插件(JS版)",
   "type": "module",
   "main": "dist/file-view.js",
