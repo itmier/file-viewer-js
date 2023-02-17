@@ -1,6 +1,10 @@
 interface ToolPanelParams {
     scale: number;
     rotate: number;
+    offsetX: number;
+    offsetY: number;
+    initX: number;
+    initY: number;
 }
 interface CustomFiles {
     url: string;
@@ -26,12 +30,15 @@ declare class FileView {
     addCLoseIcon(): void;
     initArrow(): void;
     loadImage(url: string): void;
+    handleMouseDown(e: MouseEvent): void;
+    private _handleMouseWheel;
     handleImgLoadError(): void;
     loadPDF(fileId: string): void;
     clearShowContent(): void;
     getFileType(originName: string): string;
     showFile(item: CustomFiles): void;
     open(): void;
+    uninstallListener(): void;
     close(): void;
     jumpSwitch(pageIndex: number): void;
     showLoading(): void;

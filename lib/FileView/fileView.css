@@ -45,6 +45,7 @@
   object-fit: contain;
   animation-duration: 500ms;
   animation-name: slidein;
+  position: absolute;
 }
 .error-tips {
   display: flex;

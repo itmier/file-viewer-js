@@ -1,30 +1,57 @@
-var r = Object.defineProperty;
-var d = (l, e, t) => e in l ? r(l, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : l[e] = t;
-var i = (l, e, t) => (d(l, typeof e != "symbol" ? e + "" : e, t), t);
-import { ElLoading as h } from "element-plus";
-class E {
+var w = Object.defineProperty;
+var u = (n, e, t) => e in n ? w(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t;
+var o = (n, e, t) => (u(n, typeof e != "symbol" ? e + "" : e, t), t);
+import { ElLoading as p } from "element-plus";
+function f(n) {
+  let e = !1;
+  return function(...t) {
+    e || (e = !0, window.requestAnimationFrame((s) => {
+      n.apply(this, t), e = !1;
+    }));
+  };
+}
+function g(n, e) {
+  try {
+    if (e.width < n.width && e.height < n.height)
+      return e;
+    const t = n.width / n.height, s = e.width / e.height;
+    let i, l;
+    return t < s ? (i = n.width, l = n.width / s) : (i = n.height * s, l = n.height), { width: parseInt(String(i)), height: parseInt(String(l)) };
+  } catch (t) {
+    console.log(t);
+  }
+}
+class L {
   constructor({ files: e, showUrl: t }) {
     // 当前页码/总页码, dom元素
-    i(this, "fileViewDescElement", null);
+    o(this, "fileViewDescElement", null);
     // 工具面板参数
-    i(this, "toolPanelParams", {
+    o(this, "toolPanelParams", {
       scale: 1,
-      rotate: 0
+      rotate: 0,
+      offsetX: 0,
+      offsetY: 0,
+      initX: 0,
+      initY: 0
     });
     // 显示工具栏
-    i(this, "needTools", !0);
+    o(this, "needTools", !0);
     // loading实例
-    i(this, "loadingInstance", null);
+    o(this, "loadingInstance", null);
     // 遮罩层
-    i(this, "maskElement", null);
+    o(this, "maskElement", null);
     // 展示层
-    i(this, "showElement", null);
+    o(this, "showElement", null);
     // 遮罩层点击是否关闭
-    i(this, "maskEnableClick", !1);
+    o(this, "maskEnableClick", !1);
     // 点击的 文件在fils的 index
-    i(this, "currentIndex", 0);
+    o(this, "currentIndex", 0);
     // 文件集合
-    i(this, "files");
+    o(this, "files");
+    // 监听的滚轮方法
+    o(this, "_handleMouseWheel", f((e) => {
+      e.deltaY < 0 ? this.handleTool("enlarge") : this.handleTool("narrow");
+    }));
     this.files = e, this.currentIndex = this.files.findIndex((s) => s.url === t), this.initMask(), this.addCLoseIcon(), this.initArrow(), this.initTools(), this.showFile(this.files[this.currentIndex]), this.initFileName();
   }
   // 初始化遮罩层
@@ -47,18 +74,18 @@ class E {
     s.className = "narrow-btn tool-btn", s.addEventListener("click", () => {
       this.handleTool("narrow");
     });
-    const n = document.createElement("div");
-    n.className = "reset-btn tool-btn", n.addEventListener("click", () => {
+    const i = document.createElement("div");
+    i.className = "reset-btn tool-btn", i.addEventListener("click", () => {
       this.handleTool("reset");
     });
-    const a = document.createElement("div");
-    a.className = "left-rotate-btn tool-btn", a.addEventListener("click", () => {
+    const l = document.createElement("div");
+    l.className = "left-rotate-btn tool-btn", l.addEventListener("click", () => {
       this.handleTool("left-rotate");
     });
-    const o = document.createElement("div");
-    o.className = "right-rotate-btn tool-btn", o.addEventListener("click", () => {
+    const h = document.createElement("div");
+    h.className = "right-rotate-btn tool-btn", h.addEventListener("click", () => {
       this.handleTool("right-rotate");
-    }), this.maskElement && (e.appendChild(t), e.appendChild(s), e.appendChild(n), e.appendChild(a), e.appendChild(o), this.maskElement.appendChild(e));
+    }), this.maskElement && (e.appendChild(t), e.appendChild(s), e.appendChild(i), e.appendChild(l), e.appendChild(h), this.maskElement.appendChild(e));
   }
   // 添加关闭图标
   addCLoseIcon() {
@@ -88,15 +115,45 @@ class E {
   }
   // 图片加载
   loadImage(e) {
-    this.maskElement && !this.showElement && (this.showElement = document.createElement("div"), this.showElement.setAttribute("id", "show-element"), this.showElement.classList.add("show-element"), this.maskElement.appendChild(this.showElement)), this.clearShowContent();
+    var s;
+    this.maskElement && !this.showElement && (this.showElement = document.createElement("div"), this.showElement.setAttribute("id", "show-element"), this.showElement.classList.add("show-element"), this.maskElement.appendChild(this.showElement)), (s = this.showElement) == null || s.classList.remove("pdf-center"), this.clearShowContent();
     const t = new Image();
     t.src = e, t.id = "img-box", t.addEventListener("load", () => {
-      this.showElement && (this.showElement.appendChild(t), this.showElement.addEventListener("wheel", (s) => {
-        s.deltaY < 0 ? this.handleTool("enlarge") : this.handleTool("narrow");
-      }));
-    }), t.addEventListener("error", (s) => {
-      console.log("图片加载失败"), console.log(s), this.handleImgLoadError();
+      if (!this.showElement)
+        return;
+      const i = t.width, l = t.height, h = this.showElement.offsetWidth, a = this.showElement.offsetHeight, { width: m, height: c } = g(
+        {
+          width: h,
+          height: a
+        },
+        {
+          width: i,
+          height: l
+        }
+      );
+      t.style.width = m + "px", t.style.height = c + "px";
+      const r = (h - m) / 2, d = (a - c) / 2;
+      this.toolPanelParams.initX = r, this.toolPanelParams.initY = d, this.toolPanelParams.offsetX = r, this.toolPanelParams.offsetY = d, t.style.left = r + "px", t.style.top = d + "px", this.showElement.appendChild(t), this.showElement.addEventListener("wheel", this._handleMouseWheel), this.showElement.addEventListener("mousedown", (E) => {
+        this.handleMouseDown(E);
+      });
+    }), t.addEventListener("error", (i) => {
+      console.log("图片加载失败"), console.log(i), this.handleImgLoadError();
     });
+  }
+  // 鼠标按下
+  handleMouseDown(e) {
+    if (!this.showElement)
+      return;
+    const { offsetX: t, offsetY: s } = this.toolPanelParams, i = e.pageX, l = e.pageY, h = f((a) => {
+      this.toolPanelParams.offsetX = t + a.pageX - i, this.toolPanelParams.offsetY = s + a.pageY - l, this.handleImg();
+    });
+    this.showElement.addEventListener("mousemove", h), this.showElement.addEventListener("mouseup", () => {
+      var a;
+      (a = this.showElement) == null || a.removeEventListener("mousemove", h);
+    }), this.showElement.addEventListener("mouseleave", () => {
+      var a;
+      (a = this.showElement) == null || a.removeEventListener("mousemove", h);
+    }), e.preventDefault();
   }
   // 文件加载错误处理
   handleImgLoadError() {
@@ -106,8 +163,8 @@ class E {
     e.classList.add("error-tips-text"), e.innerHTML = "文件类型不支持预览, 请自行下载后预览";
     const t = document.createElement("div");
     t.classList.add("to-download"), t.innerHTML = "点击下载", t.addEventListener("click", () => {
-      const { url: n } = this.files[this.currentIndex], a = document.createElement("a");
-      a.href = n, a.click();
+      const { url: i } = this.files[this.currentIndex], l = document.createElement("a");
+      l.href = i, l.click();
     });
     const s = document.createElement("div");
     s.classList.add("error-tips"), s.appendChild(e), s.appendChild(t), this.showElement.appendChild(s);
@@ -127,8 +184,8 @@ class E {
   // 获取文件类型
   getFileType(e) {
     let t = "img";
-    const s = e.split("."), n = s[s.length - 1].toLowerCase();
-    return n === "pdf" && (t = n), t;
+    const s = e.split("."), i = s[s.length - 1].toLowerCase();
+    return i === "pdf" && (t = i), t;
   }
   // 文件展示逻辑
   showFile(e) {
@@ -136,18 +193,25 @@ class E {
   }
   open() {
   }
+  // 移除监听
+  uninstallListener() {
+    this.showElement && this.showElement.removeEventListener("wheel", this._handleMouseWheel);
+  }
   // 关闭方法
   close() {
-    this.maskElement && (this.maskElement.parentElement && this.maskElement.parentElement.removeChild(this.maskElement), this.maskElement = null);
+    this.maskElement && (this.uninstallListener(), this.maskElement.parentElement && this.maskElement.parentElement.removeChild(this.maskElement), this.maskElement = null);
   }
   // 图片跳转方法
   jumpSwitch(e) {
     var s;
-    this.initToolPanelParams(), ((s = this.files[e]) == null ? void 0 : s.url) && (this.currentIndex = e, this.showFile(this.files[this.currentIndex]), this.setFilePageName(), this.arrowIsActive());
+    this.toolPanelParams.initX = 0, this.toolPanelParams.initY = 0, this.initToolPanelParams(), ((s = this.files[e]) == null ? void 0 : s.url) && (this.currentIndex = e, this.showFile(this.files[this.currentIndex]), this.setFilePageName(), this.arrowIsActive());
   }
   // 加载 Loading
   showLoading() {
-    this.loadingInstance = h.service({ fullscreen: !0, target: this.showElement });
+    this.loadingInstance = p.service({
+      fullscreen: !0,
+      target: this.showElement
+    });
   }
   // 关闭 Loading
   closeLoading() {
@@ -161,28 +225,25 @@ class E {
   }
   // 初始化 工具栏参数
   initToolPanelParams() {
-    this.toolPanelParams = {
-      scale: 1,
-      rotate: 0
-    };
+    this.toolPanelParams.scale = 1, this.toolPanelParams.rotate = 0, this.toolPanelParams.offsetX = 0, this.toolPanelParams.offsetY = 0;
   }
   // 操作图片
   handleImg() {
     const e = document.getElementById("img-box");
-    e && (e.style.transform = `scale(${this.toolPanelParams.scale}) rotate(${this.toolPanelParams.rotate}deg)`, e.style.transition = "all 0.12s");
+    e && (e.style.transform = `scale(${this.toolPanelParams.scale}) rotate(${this.toolPanelParams.rotate}deg)`, e.style.transition = "all 0.12s", e.style.left = this.toolPanelParams.offsetX + "px", e.style.top = this.toolPanelParams.offsetY + "px");
   }
   // handleTool
   handleTool(e) {
     let t = this.toolPanelParams.scale, s = this.toolPanelParams.rotate;
     switch (e) {
       case "enlarge":
-        t += 0.1, t >= 5 && (t = 5), this.toolPanelParams.scale = t, this.handleImg();
+        t += 0.05, t >= 5 && (t = 5), this.toolPanelParams.scale = t, this.handleImg();
         break;
       case "narrow":
-        t -= 0.1, t <= 0.1 && (t = 0.1), this.toolPanelParams.scale = t, this.handleImg();
+        t -= 0.05, t <= 0.1 && (t = 0.1), this.toolPanelParams.scale = t, this.handleImg();
         break;
       case "reset":
-        this.initToolPanelParams(), this.handleImg();
+        this.initToolPanelParams(), (this.toolPanelParams.initX !== 0 || this.toolPanelParams.initY !== 0) && (this.toolPanelParams.offsetX = this.toolPanelParams.initX, this.toolPanelParams.offsetY = this.toolPanelParams.initY), this.handleImg();
         break;
       case "left-rotate":
         s = s - 90, this.toolPanelParams.rotate = s, this.handleImg();
@@ -217,5 +278,5 @@ class E {
   }
 }
 export {
-  E as default
+  L as default
 };
